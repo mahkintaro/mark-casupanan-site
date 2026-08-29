@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mark Casupanan — Remote Operations &amp; Support</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-base:#10151B;
+    --bg-panel:#171E26;
+    --bg-panel-alt:#1D2830;
+    --amber:#E3A63D;
+    --green:#4CAF82;
+    --text-primary:#ECEFF3;
+    --text-muted:#8996A6;
+    --hairline:#2A343E;
+    --radius:10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg-base);
+    color:var(--text-primary);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .display{font-family:'Space Grotesk',sans-serif;}
+
+  a{color:inherit;}
+  .wrap{max-width:960px; margin:0 auto; padding:0 28px;}
+
+  /* ---------- NAV ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(16,21,27,0.88);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--hairline);
+  }
+  nav.wrap{
+    display:flex; align-items:center; justify-content:space-between;
+    height:60px;
+  }
+  .brand{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; letter-spacing:0.02em;}
+  .brand .dim{color:var(--text-muted); font-weight:400;}
+  .navlinks{display:flex; gap:26px; font-size:13px;}
+  .navlinks a{color:var(--text-muted); text-decoration:none; transition:color .15s;}
+  .navlinks a:hover{color:var(--text-primary);}
+  @media (max-width:640px){ .navlinks{display:none;} }
+
+  /* ---------- HERO / DISPATCH BOARD ---------- */
+  .hero{padding:64px 0 40px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em;
+    color:var(--green); text-transform:uppercase; display:flex; align-items:center; gap:8px;
+    margin-bottom:18px;
+  }
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--green); display:inline-block;
+       animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.35;}}
+  @media (prefers-reduced-motion:reduce){ .dot{animation:none;} }
+
+  h1.name{
+    font-family:'Space Grotesk',sans-serif; font-weight:700;
+    font-size:clamp(38px,6vw,60px); line-height:1.02; letter-spacing:-0.01em;
+  }
+  .tagline{
+    margin-top:14px; font-size:17px; color:var(--text-muted); max-width:520px;
+  }
+  .hero-meta{
+    display:flex; flex-wrap:wrap; gap:18px; margin-top:22px;
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--text-muted);
+  }
+  .hero-meta span b{color:var(--text-primary); font-weight:500;}
+
+  /* dispatch board */
+  .board{
+    margin-top:40px;
+    border:1px solid var(--hairline);
+    border-radius:var(--radius);
+    background:var(--bg-panel);
+    overflow:hidden;
+  }
+  .board-head{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:12px 18px; border-bottom:1px solid var(--hairline);
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em;
+    color:var(--text-muted); text-transform:uppercase;
+  }
+  #clock{color:var(--text-primary);}
+  .row{
+    display:grid; grid-template-columns:14px 1fr auto; gap:16px; align-items:center;
+    padding:16px 18px; border-bottom:1px solid var(--hairline);
+  }
+  .row:last-child{border-bottom:none;}
+  .status{width:9px; height:9px; border-radius:50%;}
+  .status.active{background:var(--green); box-shadow:0 0 0 3px rgba(76,175,130,.15);}
+  .status.standby{background:var(--amber); box-shadow:0 0 0 3px rgba(227,166,61,.15);}
+  .row-title{font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:600;}
+  .row-sub{font-size:12.5px; color:var(--text-muted); margin-top:2px;}
+  .row-tag{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.06em;
+    padding:4px 9px; border-radius:20px; text-transform:uppercase; white-space:nowrap;
+  }
+  .row-tag.active{color:var(--green); border:1px solid rgba(76,175,130,.35); background:rgba(76,175,130,.08);}
+  .row-tag.standby{color:var(--amber); border:1px solid rgba(227,166,61,.35); background:rgba(227,166,61,.08);}
+
+  /* ticker */
+  .ticker-wrap{
+    border-top:1px solid var(--hairline);
+    overflow:hidden; white-space:nowrap; background:var(--bg-panel-alt);
+  }
+  .ticker{
+    display:inline-block; padding:10px 0;
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--text-muted);
+    animation:scroll 32s linear infinite;
+  }
+  .ticker span{margin:0 22px;}
+  @keyframes scroll{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
+  @media (prefers-reduced-motion:reduce){ .ticker{animation:none;} }
+
+  /* ---------- SECTIONS ---------- */
+  section{padding:64px 0;}
+  section + section{border-top:1px solid var(--hairline);}
+  .kicker{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.14em;
+    color:var(--amber); text-transform:uppercase; margin-bottom:10px;
+  }
+  h2{font-family:'Space Grotesk',sans-serif; font-size:clamp(24px,3.2vw,32px); font-weight:600; margin-bottom:28px;}
+  p.lede{color:var(--text-muted); max-width:640px; font-size:15.5px; margin-bottom:32px;}
+
+  /* capability cards */
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:640px){ .grid-2{grid-template-columns:1fr;} }
+  .card{
+    background:var(--bg-panel); border:1px solid var(--hairline); border-radius:var(--radius);
+    padding:22px;
+  }
+  .card h3{font-family:'Space Grotesk',sans-serif; font-size:16.5px; font-weight:600; margin-bottom:8px;}
+  .card p{font-size:13.5px; color:var(--text-muted);}
+  .card .stack{margin-top:14px; display:flex; flex-wrap:wrap; gap:6px;}
+  .chip{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--text-muted);
+    border:1px solid var(--hairline); border-radius:5px; padding:3px 8px;
+  }
+
+  /* timeline */
+  .timeline{border-left:1px solid var(--hairline); margin-left:6px;}
+  .tl-item{position:relative; padding:0 0 30px 26px;}
+  .tl-item::before{
+    content:''; position:absolute; left:-5px; top:4px; width:9px; height:9px;
+    border-radius:50%; background:var(--bg-base); border:2px solid var(--amber);
+  }
+  .tl-item:first-child::before{border-color:var(--green);}
+  .tl-date{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--text-muted);}
+  .tl-role{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; margin-top:3px;}
+  .tl-desc{font-size:13.5px; color:var(--text-muted); margin-top:5px; max-width:600px;}
+
+  /* credentials strip */
+  .cred-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  @media (max-width:720px){ .cred-grid{grid-template-columns:1fr 1fr;} }
+  @media (max-width:460px){ .cred-grid{grid-template-columns:1fr;} }
+  .cred{
+    border:1px solid var(--hairline); border-radius:var(--radius); padding:16px;
+    background:var(--bg-panel);
+  }
+  .cred .num{font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; color:var(--amber);}
+  .cred .label{font-size:12px; color:var(--text-muted); margin-top:4px;}
+
+  /* certificate wall */
+  .cert-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:18px;}
+  @media (max-width:640px){ .cert-grid{grid-template-columns:1fr;} }
+  .cert-card{
+    border:1px solid var(--hairline); border-radius:var(--radius); background:var(--bg-panel);
+    overflow:hidden; text-decoration:none; color:inherit; display:block;
+    transition:border-color .15s;
+  }
+  .cert-card:hover{border-color:var(--amber);}
+  .cert-thumb{
+    width:100%; aspect-ratio:4/3; overflow:hidden; background:var(--bg-panel-alt);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .cert-thumb img{width:100%; height:100%; object-fit:contain; display:block;}
+  .cert-info{padding:14px 16px; border-top:1px solid var(--hairline);}
+  .cert-info h4{font-family:'Space Grotesk',sans-serif; font-size:14.5px; font-weight:600;}
+  .cert-info p{font-size:12px; color:var(--text-muted); margin-top:3px; font-family:'IBM Plex Mono',monospace;}
+
+  /* toolboard */
+  .tool-groups{display:grid; grid-template-columns:1fr 1fr; gap:24px 40px;}
+  @media (max-width:640px){ .tool-groups{grid-template-columns:1fr;} }
+  .tool-group h4{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--text-muted); margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid var(--hairline);
+  }
+  .tool-group ul{list-style:none; font-size:14px; color:var(--text-primary);}
+  .tool-group li{padding:5px 0; display:flex; justify-content:space-between; gap:10px;}
+  .tool-group li span:last-child{color:var(--text-muted); font-family:'IBM Plex Mono',monospace; font-size:11.5px;}
+
+  /* contact */
+  footer{padding:60px 0 80px;}
+  .contact-panel{
+    border:1px solid var(--hairline); border-radius:var(--radius); background:var(--bg-panel);
+    padding:36px; display:flex; flex-wrap:wrap; justify-content:space-between; gap:28px;
+  }
+  .contact-panel h2{margin-bottom:8px;}
+  .contact-panel p{color:var(--text-muted); font-size:14px; max-width:340px;}
+  .contact-list{display:flex; flex-direction:column; gap:10px; font-size:14px;}
+  .contact-list a{text-decoration:none; color:var(--text-primary); display:flex; align-items:center; gap:10px;}
+  .contact-list a:hover{color:var(--amber);}
+  .contact-list .k{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--text-muted); width:64px; text-transform:uppercase; letter-spacing:.06em;}
+  .avail{
+    margin-top:18px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--green);
+    display:flex; align-items:center; gap:8px;
+  }
+  .fine{text-align:center; margin-top:40px; font-size:11.5px; color:var(--text-muted); font-family:'IBM Plex Mono',monospace;}
+
+  .reveal{opacity:0; transform:translateY(14px); transition:opacity .5s ease, transform .5s ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<header>
+  <nav class="wrap">
+    <div class="brand">MARK CASUPANAN <span class="dim">/ Ops Desk</span></div>
+    <div class="navlinks">
+      <a href="#board">Board</a>
+      <a href="#capabilities">Capabilities</a>
+      <a href="#experience">Experience</a>
+      <a href="#credentials">Credentials</a>
+      <a href="#certificates">Certificates</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </nav>
+</header>
+
+<div class="wrap hero">
+  <div class="eyebrow"><span class="dot"></span>ON DUTY · PHILIPPINE TIME</div>
+  <h1 class="name display">Mark Casupanan</h1>
+  <p class="tagline">Remote operations &amp; support specialist running multiple live channels at once — e‑commerce ops, customer support, dispatch, and executive admin — for clients across the US, UK, Canada, and beyond.</p>
+  <div class="hero-meta">
+    <span>YEARS ACTIVE <b id="years-counter">13</b></span>
+    <span>PLATFORM STANDING <b>Upwork Top Rated Plus · 4yrs</b></span>
+    <span>BASE <b>Orani, Bataan, PH</b></span>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="board reveal" id="board">
+    <div class="board-head">
+      <span>LIVE CHANNEL BOARD</span>
+      <span id="clock" class="mono">--:--:--</span>
+    </div>
+
+    <div class="row">
+      <div class="status active"></div>
+      <div>
+        <div class="row-title">E‑Commerce Operations</div>
+        <div class="row-sub">Shopify · WooCommerce · Etsy · supplier &amp; order coordination</div>
+      </div>
+      <div class="row-tag active">Active</div>
+    </div>
+
+    <div class="row">
+      <div class="status active"></div>
+      <div>
+        <div class="row-title">Customer Support &amp; Appointment Setting</div>
+        <div class="row-sub">Inbound/outbound calls, BDC, cold calling, CRM scheduling</div>
+      </div>
+      <div class="row-tag active">Active</div>
+    </div>
+
+    <div class="row">
+      <div class="status standby"></div>
+      <div>
+        <div class="row-title">Executive &amp; Administrative Support</div>
+        <div class="row-sub">Calendars, inbox management, reporting, CRM upkeep</div>
+      </div>
+      <div class="row-tag standby">Open</div>
+    </div>
+
+    <div class="row">
+      <div class="status standby"></div>
+      <div>
+        <div class="row-title">Real Estate Operations</div>
+        <div class="row-sub">Lead generation, client communication, back‑office support</div>
+      </div>
+      <div class="row-tag standby">Open</div>
+    </div>
+
+    <div class="ticker-wrap">
+      <div class="ticker">
+        <span>SALESFORCE</span><span>ZENDESK</span><span>GO HIGH LEVEL</span><span>VINSOLUTIONS</span><span>XTIME</span><span>TEKION</span><span>SHOPIFY</span><span>WOOCOMMERCE</span><span>RINGCENTRAL</span><span>MOJO DIALER</span><span>SLACK</span><span>ZOOM</span><span>CANVA</span><span>MICROSOFT COPILOT</span>
+        <span>SALESFORCE</span><span>ZENDESK</span><span>GO HIGH LEVEL</span><span>VINSOLUTIONS</span><span>XTIME</span><span>TEKION</span><span>SHOPIFY</span><span>WOOCOMMERCE</span><span>RINGCENTRAL</span><span>MOJO DIALER</span><span>SLACK</span><span>ZOOM</span><span>CANVA</span><span>MICROSOFT COPILOT</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="capabilities">
+  <div class="wrap">
+    <div class="kicker">Capabilities</div>
+    <h2 class="reveal">What I run day to day</h2>
+    <div class="grid-2">
+      <div class="card reveal">
+        <h3>E‑Commerce Operations</h3>
+        <p>End‑to‑end Shopify/WooCommerce store support — product uploads, order fulfillment, supplier &amp; 3PL coordination, review management, dropshipping workflows.</p>
+        <div class="stack"><span class="chip">Shopify</span><span class="chip">WooCommerce</span><span class="chip">Etsy</span><span class="chip">CJDropshipping</span><span class="chip">HyperSKU</span></div>
+      </div>
+      <div class="card reveal">
+        <h3>Customer Support &amp; BDC</h3>
+        <p>Inbound/outbound call handling, appointment setting, cold calling, and ticket resolution — including a 95% first‑call resolution track record.</p>
+        <div class="stack"><span class="chip">Zendesk</span><span class="chip">RingCentral</span><span class="chip">Mojo Dialer</span><span class="chip">VINSolutions</span><span class="chip">XTime</span></div>
+      </div>
+      <div class="card reveal">
+        <h3>Executive &amp; Admin Support</h3>
+        <p>Calendar management, inbox triage, CRM record‑keeping, and recurring reporting for founders and small teams.</p>
+        <div class="stack"><span class="chip">Google Workspace</span><span class="chip">Slack</span><span class="chip">Salesforce</span><span class="chip">HubSpot</span></div>
+      </div>
+      <div class="card reveal">
+        <h3>Real Estate Ops</h3>
+        <p>Lead generation, client follow‑up, and back‑office documentation support for realtors and property teams.</p>
+        <div class="stack"><span class="chip">Go High Level</span><span class="chip">Cold Calling</span><span class="chip">Lead Gen</span><span class="chip">CRM Upkeep</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="experience">
+  <div class="wrap">
+    <div class="kicker">Experience</div>
+    <h2 class="reveal">Recent posts</h2>
+    <div class="timeline">
+      <div class="tl-item reveal">
+        <div class="tl-date mono">May 2025 — Present</div>
+        <div class="tl-role">Receptionist / BDC Inbound Appointment Setter</div>
+        <div class="tl-desc">Sunrise Toyota — phone &amp; text scheduling for service appointments, customer records in Tekion.</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date mono">2025 — Present</div>
+        <div class="tl-role">Shopify General Manager (via FreeUp)</div>
+        <div class="tl-desc">Healthspan Holistic — supplier coordination, review sourcing, storefront upkeep for a supplement brand.</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date mono">Oct 2022 — Oct 2025</div>
+        <div class="tl-role">BDC Service Representative</div>
+        <div class="tl-desc">Sunrise Chevrolet of Forest Hills — appointment scheduling across calls, texts, and email; VINSolutions &amp; XTime.</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date mono">2019 — 2023</div>
+        <div class="tl-role">eCommerce Operations Specialist</div>
+        <div class="tl-desc">Infinite Rushmore &amp; SBL Cycling — full operational ownership of Shopify/Etsy stores, supplier &amp; team coordination.</div>
+      </div>
+      <div class="tl-item reveal">
+        <div class="tl-date mono">2010 — 2012</div>
+        <div class="tl-role">Customer Service Representative</div>
+        <div class="tl-desc">T‑Mobile USA (NCO Philippines Clark) — technical &amp; billing support, 95% first‑call resolution.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="credentials">
+  <div class="wrap">
+    <div class="kicker">Standing</div>
+    <h2 class="reveal">Platform &amp; credentials</h2>
+    <div class="cred-grid">
+      <div class="cred reveal"><div class="num">13+</div><div class="label">Years remote &amp; on‑site support experience</div></div>
+      <div class="cred reveal"><div class="num">Top 3%</div><div class="label">Upwork Top Rated Plus, 4 consecutive years</div></div>
+      <div class="cred reveal"><div class="num">C2</div><div class="label">EF SET English Certificate — Proficient (73/100)</div></div>
+      <div class="cred reveal"><div class="num">FreeUp</div><div class="label">Top Talent Plus freelancer, since 2020</div></div>
+      <div class="cred reveal"><div class="num">95%</div><div class="label">First‑call resolution rate, T‑Mobile USA support</div></div>
+      <div class="cred reveal"><div class="num">VPM</div><div class="label">Application Processing &amp; Executive Assistant certificates</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="certificates">
+  <div class="wrap">
+    <div class="kicker">On File</div>
+    <h2 class="reveal">Certificates</h2>
+    <p class="lede reveal">To add a new one later: drop the image into the <span class="mono">/certs</span> folder and copy one of these cards — no rebuild needed.</p>
+    <div class="cert-grid">
+      <a class="cert-card reveal" href="certs/ef-set-certificate.png" target="_blank" rel="noopener">
+        <div class="cert-thumb"><img src="certs/ef-set-certificate.png" alt="EF SET English Certificate"></div>
+        <div class="cert-info">
+          <h4>EF SET English Certificate</h4>
+          <p>C2 Proficient · 73/100 · Feb 2026</p>
+        </div>
+      </a>
+      <a class="cert-card reveal" href="certs/xtime-invite-call-center-agent.png" target="_blank" rel="noopener">
+        <div class="cert-thumb"><img src="certs/xtime-invite-call-center-agent.png" alt="Xtime Invite Call Center Agent Certificate"></div>
+        <div class="cert-info">
+          <h4>Xtime Invite Call Center Agent</h4>
+          <p>Cox Automotive · Feb 2025</p>
+        </div>
+      </a>
+      <a class="cert-card reveal" href="certs/vpm-application-processing-101.png" target="_blank" rel="noopener">
+        <div class="cert-thumb"><img src="certs/vpm-application-processing-101.png" alt="VPM Solutions Application Processing 101 Certificate"></div>
+        <div class="cert-info">
+          <h4>Application Processing 101</h4>
+          <p>VPM Solutions Academy · Feb 2026</p>
+        </div>
+      </a>
+      <a class="cert-card reveal" href="certs/vpm-executive-assistant.png" target="_blank" rel="noopener">
+        <div class="cert-thumb"><img src="certs/vpm-executive-assistant.png" alt="VPM Solutions Executive Assistant Certificate"></div>
+        <div class="cert-info">
+          <h4>Executive Assistant</h4>
+          <p>VPM Solutions Academy · Feb 2026</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="toolboard">
+  <div class="wrap">
+    <div class="kicker">Equipment</div>
+    <h2 class="reveal">Tool rack</h2>
+    <div class="tool-groups">
+      <div class="tool-group reveal">
+        <h4>CRM &amp; Ops</h4>
+        <ul>
+          <li><span>Salesforce, HubSpot, Zendesk</span></li>
+          <li><span>Go High Level, VINSolutions</span></li>
+          <li><span>XTime, Tekion, DealerDaily</span></li>
+        </ul>
+      </div>
+      <div class="tool-group reveal">
+        <h4>Comms &amp; Dialers</h4>
+        <ul>
+          <li><span>RingCentral, Mojo Dialer, Zoiper5</span></li>
+          <li><span>Slack, Zoom, Teams</span></li>
+          <li><span>REI Reply, GoTo</span></li>
+        </ul>
+      </div>
+      <div class="tool-group reveal">
+        <h4>eCommerce</h4>
+        <ul>
+          <li><span>Shopify, WooCommerce, Etsy</span></li>
+          <li><span>CJDropshipping, HyperSKU</span></li>
+        </ul>
+      </div>
+      <div class="tool-group reveal">
+        <h4>Design &amp; AI</h4>
+        <ul>
+          <li><span>Canva, Microsoft Clipchamp</span></li>
+          <li><span>Meta Business Suite, TikTok</span></li>
+          <li><span>Microsoft CoPilot, ChatGPT</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer id="contact">
+  <div class="wrap">
+    <div class="contact-panel reveal">
+      <div>
+        <h2>Let's route the next channel.</h2>
+        <p>Open to new engagements — full‑time, part‑time, or project‑based. Comfortable working any timezone your business needs.</p>
+        <div class="avail"><span class="dot" style="background:var(--green)"></span>Meeting availability: Mon–Sat, after 6:00 AM PH Time</div>
+      </div>
+      <div class="contact-list">
+        <a href="mailto:marksobrevinascasupanan@gmail.com"><span class="k mono">Email</span> marksobrevinascasupanan@gmail.com</a>
+        <a href="tel:+639164376272"><span class="k mono">Mobile</span> +63 916 437 6272</a>
+        <a href="https://www.linkedin.com/in/mahkintaro/" target="_blank" rel="noopener"><span class="k mono">LinkedIn</span> linkedin.com/in/mahkintaro</a>
+      </div>
+    </div>
+    <div class="fine">DISPATCH BOARD · MARK CASUPANAN · ORANI, BATAAN, PHILIPPINES</div>
+  </div>
+</footer>
+
+<script>
+  // live PH-time clock on the board
+  function tick(){
+    const el = document.getElementById('clock');
+    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    const ss = String(now.getSeconds()).padStart(2,'0');
+    el.textContent = hh + ':' + mm + ':' + ss + ' PHT';
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  // scroll reveal
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold:0.15});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+
+</body>
+</html>
